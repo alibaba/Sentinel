@@ -32,6 +32,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 /**
  * @author Eric Zhao
@@ -41,13 +42,27 @@ public final class HttpServer {
 
     private static final int DEFAULT_PORT = 8719;
 
-    private Channel channel;
+    private volatile Channel channel;
+
+    /**
+     * Indicates that a stop request has been issued. Together with the volatile
+     * channel reference, this prevents a close request from being lost when it
+     * races with a successful bind.
+     */
+    private volatile boolean stopped;
 
     final static Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
 
     public void start() throws Exception {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        if (stopped) {
+            return;
+        }
+        // Use daemon event-loop threads because the command center may not be tied
+        // to a managed application lifecycle, and stop() is not always invoked.
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1,
+            new DefaultThreadFactory("sentinel-netty-http-boss", true));
+        EventLoopGroup workerGroup = new NioEventLoopGroup(0,
+            new DefaultThreadFactory("sentinel-netty-http-worker", true));
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -62,19 +77,27 @@ public final class HttpServer {
                     port = Integer.parseInt(TransportConfig.getPort());
                 }
             } catch (Exception e) {
-                // Will cause the application exit.
+                // Reject an invalid configured port before attempting to bind.
                 throw new IllegalArgumentException("Illegal port: " + TransportConfig.getPort());
             }
             
             int retryCount = 0;
             ChannelFuture channelFuture = null;
-            // loop for an successful binding
+            // Retry binding on incremented ports until a port is available.
             while (true) {
                 int newPort = getNewPort(port, retryCount);
                 try {
                     channelFuture = b.bind(newPort).sync();
-                    TransportConfig.setRuntimePort(newPort);
-                    CommandCenterLog.info("[NettyHttpCommandCenter] Begin listening at port " + newPort);
+                    Channel boundChannel = channelFuture.channel();
+                    channel = boundChannel;
+                    if (stopped) {
+                        // close() may have run before the bind completed. Honor that
+                        // stop request now so the newly-bound channel cannot leak.
+                        boundChannel.close();
+                    } else {
+                        TransportConfig.setRuntimePort(newPort);
+                        CommandCenterLog.info("[NettyHttpCommandCenter] Begin listening at port " + newPort);
+                    }
                     break;
                 } catch (Exception e) {
                     TimeUnit.MILLISECONDS.sleep(30);
@@ -82,7 +105,6 @@ public final class HttpServer {
                     retryCount ++;
                 }
             }
-            channel = channelFuture.channel();
             channel.closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
@@ -102,7 +124,11 @@ public final class HttpServer {
     }
 
     public void close() {
-        channel.close();
+        stopped = true;
+        Channel currentChannel = channel;
+        if (currentChannel != null) {
+            currentChannel.close();
+        }
     }
 
     public void registerCommand(String commandName, CommandHandler handler) {

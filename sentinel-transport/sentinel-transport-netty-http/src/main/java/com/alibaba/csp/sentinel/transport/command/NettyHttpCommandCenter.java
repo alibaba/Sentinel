@@ -50,7 +50,6 @@ public class NettyHttpCommandCenter implements CommandCenter {
                     server.start();
                 } catch (Exception ex) {
                     RecordLog.warn("[NettyHttpCommandCenter] Failed to start Netty transport server", ex);
-                    ex.printStackTrace();
                 }
             }
         });
@@ -59,7 +58,10 @@ public class NettyHttpCommandCenter implements CommandCenter {
     @Override
     public void stop() throws Exception {
         server.close();
-        pool.shutdownNow();
+        // Do not interrupt the executor as part of normal shutdown. If a channel has
+        // been bound, closing it completes closeFuture normally. Otherwise HttpServer
+        // honors the stop request before starting or after a later successful bind.
+        pool.shutdown();
     }
 
     @Override
