@@ -15,24 +15,31 @@
  */
 package com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.util.TimeUtil;
+import com.alibaba.csp.sentinel.util.function.BiConsumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.test.AbstractTimeBasedTest;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /**
  * @author Eric Zhao
@@ -112,6 +119,94 @@ public class ExceptionCircuitBreakerTest extends AbstractTimeBasedTest {
             sleep(mocked, 5000);
 
             assertTrue(entryWithErrorIfPresent(mocked, resource, new RuntimeException()));
+        }
+    }
+
+    @Test
+    public void testHalfOpenRollbackUpdatesRetryTimestamp() {
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            DegradeRule rule = new DegradeRule("abc")
+                .setCount(0.2d)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setStatIntervalMs(20 * 1000)
+                .setTimeWindow(10)
+                .setMinRequestAmount(1);
+
+            AbstractCircuitBreaker cb = new ExceptionCircuitBreaker(rule);
+
+            Context context = new Context(null, "ctx");
+            Entry entry = Mockito.mock(Entry.class);
+            context.setCurEntry(entry);
+
+            // Capture the terminate handler attached during the OPEN -> HALF_OPEN
+            // transition so that we can trigger it manually afterwards.
+            AtomicReference<BiConsumer<Context, Entry>> handlerRef = new AtomicReference<>();
+            Mockito.doAnswer(invocation -> {
+                handlerRef.set(invocation.getArgument(0));
+                return null;
+            }).when(entry).whenTerminate(Mockito.any());
+
+            // Trigger the circuit to OPEN first, then let the recovery window pass.
+            cb.transformToOpen(1.0d);
+            assertEquals(CircuitBreaker.State.OPEN, cb.currentState());
+            sleep(mocked, 10 * 1000 + 1000);
+
+            assertTrue(cb.tryPass(context));
+            assertEquals(CircuitBreaker.State.HALF_OPEN, cb.currentState());
+
+            // Simulate the probing request being blocked by an upcoming rule,
+            // which triggers the terminate handler when the entry exits.
+            Mockito.when(entry.getBlockError()).thenReturn(new DegradeException(rule.getLimitApp(), rule));
+            handlerRef.get().accept(context, entry);
+
+            assertEquals(CircuitBreaker.State.OPEN, cb.currentState());
+            // The retry timestamp must be updated after rollback; otherwise the next
+            // request would trigger a new probe immediately and keep hitting the
+            // downstream in a tight loop.
+            assertFalse(cb.retryTimeoutArrived());
+        }
+    }
+
+    @Test
+    public void testHalfOpenProbeTimeoutFallback() {
+        try (MockedStatic<TimeUtil> mocked = super.mockTimeUtil()) {
+            // Start from a non-zero timestamp so that the probe start time is
+            // distinguishable from the "not started" state (0).
+            setCurrentMillis(mocked, 1_000_000L);
+
+            DegradeRule rule = new DegradeRule("abc")
+                .setCount(0.2d)
+                .setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO)
+                .setStatIntervalMs(20 * 1000)
+                .setTimeWindow(10)
+                .setMinRequestAmount(1);
+
+            AbstractCircuitBreaker cb = new ExceptionCircuitBreaker(rule);
+
+            Context context = new Context(null, "ctx");
+            Entry entry = Mockito.mock(Entry.class);
+            context.setCurEntry(entry);
+
+            // Trigger the circuit to OPEN first, then let the recovery window pass.
+            cb.transformToOpen(1.0d);
+            assertEquals(CircuitBreaker.State.OPEN, cb.currentState());
+            sleep(mocked, 10 * 1000 + 1000);
+
+            assertTrue(cb.tryPass(context));
+            assertEquals(CircuitBreaker.State.HALF_OPEN, cb.currentState());
+
+            // The probing request gets stuck and never completes.
+            // Advance time beyond the recovery timeout.
+            sleep(mocked, 10 * 1000 + 1000);
+
+            // The next request detects the stuck probe and falls back to OPEN.
+            assertFalse(cb.tryPass(context));
+            assertEquals(CircuitBreaker.State.OPEN, cb.currentState());
+
+            // After another recovery window, probing is allowed again.
+            sleep(mocked, 10 * 1000);
+            assertTrue(cb.tryPass(context));
+            assertEquals(CircuitBreaker.State.HALF_OPEN, cb.currentState());
         }
     }
 }
