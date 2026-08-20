@@ -40,6 +40,11 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected final AtomicReference<State> currentState = new AtomicReference<>(State.CLOSED);
     protected volatile long nextRetryTimestamp;
+    /**
+     * The timestamp when the probing request started (i.e. the state changed
+     * from OPEN to HALF_OPEN). Used to detect a stuck probe request.
+     */
+    private volatile long probeStartTimestamp;
 
     public AbstractCircuitBreaker(DegradeRule rule) {
         this(rule, EventObserverRegistry.getInstance());
@@ -75,7 +80,27 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
             // For half-open state we allow a request for probing.
             return retryTimeoutArrived() && fromOpenToHalfOpen(context);
         }
+        // If the probing request has been stuck in HALF_OPEN for longer than the
+        // recovery timeout (e.g. the request never completed), fall back to OPEN
+        // so that a new probe can be attempted in the next recovery window.
+        if (probeTimedOut()) {
+            if (currentState.compareAndSet(State.HALF_OPEN, State.OPEN)) {
+                updateNextRetryTimestamp();
+                notifyObservers(State.HALF_OPEN, State.OPEN, null);
+            }
+        }
         return false;
+    }
+
+    /**
+     * Checks whether the probing request has been stuck in HALF_OPEN longer
+     * than the recovery timeout.
+     *
+     * @return true if the probe request has exceeded the recovery timeout
+     */
+    private boolean probeTimedOut() {
+        return probeStartTimestamp > 0
+            && TimeUtil.currentTimeMillis() - probeStartTimestamp > recoveryTimeoutMs;
     }
 
     /**
@@ -104,6 +129,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected boolean fromOpenToHalfOpen(Context context) {
         if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
+            probeStartTimestamp = TimeUtil.currentTimeMillis();
             notifyObservers(State.OPEN, State.HALF_OPEN, null);
             Entry entry = context.getCurEntry();
             entry.whenTerminate(new BiConsumer<Context, Entry>() {
@@ -113,9 +139,14 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
                     // Without the hook, the circuit breaker won't recover from half-open state in some circumstances
                     // when the request is actually blocked by upcoming rules (not only degrade rules).
                     if (entry.getBlockError() != null) {
-                        // Fallback to OPEN due to detecting request is blocked
-                        currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
-                        notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);
+                        // Fallback to OPEN due to detecting request is blocked.
+                        // The retry timestamp must be updated as well, otherwise the next
+                        // request would immediately trigger a new probe and keep hitting
+                        // the downstream in a tight loop (see issue #1638).
+                        if (currentState.compareAndSet(State.HALF_OPEN, State.OPEN)) {
+                            updateNextRetryTimestamp();
+                            notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);
+                        }
                     }
                 }
             });
