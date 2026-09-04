@@ -41,17 +41,19 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
     @Override
     public void addFirst(AbstractLinkedProcessorSlot<?> protocolProcessor) {
-        protocolProcessor.setNext(first.getNext());
-        first.setNext(protocolProcessor);
+        AbstractLinkedProcessorSlot<?> context = wrap(protocolProcessor);
+        context.setNext(first.getNext());
+        first.setNext(context);
         if (end == first) {
-            end = protocolProcessor;
+            end = context;
         }
     }
 
     @Override
     public void addLast(AbstractLinkedProcessorSlot<?> protocolProcessor) {
-        end.setNext(protocolProcessor);
-        end = protocolProcessor;
+        AbstractLinkedProcessorSlot<?> context = wrap(protocolProcessor);
+        end.setNext(context);
+        end = context;
     }
 
     /**
@@ -78,6 +80,13 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         first.exit(context, resourceWrapper, count, args);
+    }
+
+    private AbstractLinkedProcessorSlot<?> wrap(AbstractLinkedProcessorSlot<?> processor) {
+        if (processor instanceof ProcessorSlotContext) {
+            return processor;
+        }
+        return new ProcessorSlotContext<>(processor);
     }
 
 }
