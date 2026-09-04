@@ -23,11 +23,14 @@ import com.alibaba.csp.sentinel.context.Context;
  */
 public abstract class AbstractLinkedProcessorSlot<T> implements ProcessorSlot<T> {
 
+    private static final ThreadLocal<ChainContext> CHAIN_CONTEXT = new ThreadLocal<>();
+
     private AbstractLinkedProcessorSlot<?> next = null;
 
     @Override
     public void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args)
         throws Throwable {
+        AbstractLinkedProcessorSlot<?> next = getNext();
         if (next != null) {
             next.transformEntry(context, resourceWrapper, obj, count, prioritized, args);
         }
@@ -42,17 +45,52 @@ public abstract class AbstractLinkedProcessorSlot<T> implements ProcessorSlot<T>
 
     @Override
     public void fireExit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
+        AbstractLinkedProcessorSlot<?> next = getNext();
         if (next != null) {
             next.exit(context, resourceWrapper, count, args);
         }
     }
 
     public AbstractLinkedProcessorSlot<?> getNext() {
+        ChainContext context = CHAIN_CONTEXT.get();
+        if (context != null && context.source == this) {
+            return context.next;
+        }
         return next;
     }
 
     public void setNext(AbstractLinkedProcessorSlot<?> next) {
         this.next = next;
+    }
+
+    static ChainContext setChainContext(AbstractLinkedProcessorSlot<?> source,
+                                        AbstractLinkedProcessorSlot<?> next) {
+        ChainContext previous = CHAIN_CONTEXT.get();
+        CHAIN_CONTEXT.set(new ChainContext(source, next));
+        return previous;
+    }
+
+    static void restoreChainContext(ChainContext previous) {
+        if (previous == null) {
+            CHAIN_CONTEXT.remove();
+        } else {
+            CHAIN_CONTEXT.set(previous);
+        }
+    }
+
+    static boolean hasActiveChainContext() {
+        return CHAIN_CONTEXT.get() != null;
+    }
+
+    static final class ChainContext {
+
+        private final AbstractLinkedProcessorSlot<?> source;
+        private final AbstractLinkedProcessorSlot<?> next;
+
+        private ChainContext(AbstractLinkedProcessorSlot<?> source, AbstractLinkedProcessorSlot<?> next) {
+            this.source = source;
+            this.next = next;
+        }
     }
 
 }

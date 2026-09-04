@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.slots;
 
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ProcessorSlotChain;
+import com.alibaba.csp.sentinel.slotchain.ProcessorSlotContext;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DefaultCircuitBreakerSlot;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot;
@@ -45,34 +46,35 @@ public class DefaultSlotChainBuilderTest {
 
         // Verify the order of slot
         AbstractLinkedProcessorSlot<?> next = slotChain.getNext();
-        assertTrue(next instanceof NodeSelectorSlot);
+        ProcessorSlotContext<?> nodeSelectorContext = assertContext(next, NodeSelectorSlot.class);
 
         // Store the first NodeSelectorSlot instance
-        NodeSelectorSlot nodeSelectorSlot = (NodeSelectorSlot) next;
+        NodeSelectorSlot nodeSelectorSlot = (NodeSelectorSlot) nodeSelectorContext.getDelegate();
 
         next = next.getNext();
-        assertTrue(next instanceof ClusterBuilderSlot);
+        assertContext(next, ClusterBuilderSlot.class);
 
         next = next.getNext();
-        assertTrue(next instanceof LogSlot);
+        ProcessorSlotContext<?> logContext = assertContext(next, LogSlot.class);
+        LogSlot logSlot = (LogSlot) logContext.getDelegate();
 
         next = next.getNext();
-        assertTrue(next instanceof StatisticSlot);
+        assertContext(next, StatisticSlot.class);
 
         next = next.getNext();
-        assertTrue(next instanceof AuthoritySlot);
+        assertContext(next, AuthoritySlot.class);
 
         next = next.getNext();
-        assertTrue(next instanceof SystemSlot);
+        assertContext(next, SystemSlot.class);
 
         next = next.getNext();
-        assertTrue(next instanceof FlowSlot);
+        assertContext(next, FlowSlot.class);
 
         next = next.getNext();
-        assertTrue(next instanceof DefaultCircuitBreakerSlot);
+        assertContext(next, DefaultCircuitBreakerSlot.class);
 
         next = next.getNext();
-        assertTrue(next instanceof DegradeSlot);
+        assertContext(next, DegradeSlot.class);
 
         next = next.getNext();
         assertNull(next);
@@ -84,10 +86,24 @@ public class DefaultSlotChainBuilderTest {
         assertNotSame(slotChain, slotChain2);
 
         next = slotChain2.getNext();
-        assertTrue(next instanceof NodeSelectorSlot);
+        ProcessorSlotContext<?> nodeSelectorContext2 = assertContext(next, NodeSelectorSlot.class);
+        assertNotSame(nodeSelectorContext, nodeSelectorContext2);
         // Store the second NodeSelectorSlot instance
-        NodeSelectorSlot nodeSelectorSlot2 = (NodeSelectorSlot) next;
+        NodeSelectorSlot nodeSelectorSlot2 = (NodeSelectorSlot) nodeSelectorContext2.getDelegate();
         // Verify the two NodeSelectorSlot instances are different
         assertNotSame(nodeSelectorSlot, nodeSelectorSlot2);
+
+        next = next.getNext().getNext();
+        ProcessorSlotContext<?> logContext2 = assertContext(next, LogSlot.class);
+        assertNotSame(logContext, logContext2);
+        assertSame(logSlot, logContext2.getDelegate());
+    }
+
+    private ProcessorSlotContext<?> assertContext(AbstractLinkedProcessorSlot<?> slot,
+                                                   Class<?> delegateClass) {
+        assertTrue(slot instanceof ProcessorSlotContext);
+        ProcessorSlotContext<?> context = (ProcessorSlotContext<?>) slot;
+        assertTrue(delegateClass.isInstance(context.getDelegate()));
+        return context;
     }
 }
