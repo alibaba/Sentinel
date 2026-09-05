@@ -184,7 +184,7 @@ If you are using Sentinel, please [add your company here](https://github.com/ali
 ![二维火](https://user-images.githubusercontent.com/9434884/49358468-bc43de00-f70d-11e8-97fe-0bf05865f29f.png)
 ![Mandao](https://user-images.githubusercontent.com/9434884/48463559-6cad7900-e817-11e8-87e4-42952b074837.png)
 ![文轩在线](http://static.winxuancdn.com/css/v2/images/logo.png)
-![客如云](https://www.keruyun.com/static/krynew/images/logo.png)
+![客如云](https://www.keruyun.com/templates/default/images/Group%201.svg)
 ![亲宝宝](https://stlib.qbb6.com/wclt/img/home_hd/version1/title_logo.png)
 ![金汇金融](https://res.jinhui365.com/r/images/logo2.png?v=1.527)
 ![闪电购](http://cdn.52shangou.com/shandianbang/official-source/3.1.1/build/images/logo.png)
