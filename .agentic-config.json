@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "project_name": "sentinel",
+    "description": "A Java project with Java (Maven)",
+    "generated_by": "Braxis",
+    "generated_at": "2026-10-03T12:56:16.223782",
+    "schema_version": "1.0"
+  },
+  "project": {
+    "languages": [
+      "java",
+      "javascript"
+    ],
+    "primary_language": "java",
+    "build_system": "Java (Maven)",
+    "architecture": "single-package",
+    "is_monorepo": false,
+    "monorepo_type": null,
+    "subsystems": []
+  },
+  "ai_readiness": {
+    "overall_score": 95,
+    "tier": "Agent-Optimized",
+    "dimensions": {
+      "architecture": {
+        "score": 20,
+        "reason": "Code organization and modularity"
+      },
+      "testing": {
+        "score": 15,
+        "reason": "337 test files found"
+      },
+      "dependencies": {
+        "score": 12,
+        "reason": "Dependency management and version pinning"
+      },
+      "conventions": {
+        "score": 10,
+        "reason": "Consistency in naming and patterns"
+      },
+      "entry_points": {
+        "score": 10,
+        "reason": "1118 critical files identified"
+      },
+      "security": {
+        "score": 10,
+        "reason": "Input validation and error handling"
+      },
+      "build": {
+        "score": 10,
+        "reason": "Build system clarity and configuration"
+      },
+      "documentation": {
+        "score": 8,
+        "reason": "README and code documentation"
+      }
+    }
+  },
+  "development": {
+    "setup_command": "npm install",
+    "test_command": "npm test",
+    "lint_command": "npm run lint",
+    "format_command": "npm run format",
+    "dev_server_command": null,
+    "prerequisites": {
+      "language_version": "N/A",
+      "package_manager": "npm",
+      "key_tools": [
+        "JUnit"
+      ]
+    }
+  },
+  "architecture": {
+    "pattern": "single-package project",
+    "main_entry": "com.alibaba.csp.sentinel.transport.CommandCenter, com.alibaba.csp.sentinel.transport.HeartbeatSender, HeartbeatMessage.java",
+    "key_modules": [
+      {
+        "name": "com.alibaba.csp.sentinel.transport",
+        "path": "sentinel-transport/sentinel-transport-simple-http/src/main/resources/META-INF/services/com.alibaba.csp.sentinel.transport.CommandCenter",
+        "purpose": "Source module"
+      },
+      {
+        "name": "com.alibaba.csp.sentinel.transport",
+        "path": "sentinel-transport/sentinel-transport-simple-http/src/main/resources/META-INF/services/com.alibaba.csp.sentinel.transport.HeartbeatSender",
+        "purpose": "Source module"
+      },
+      {
+        "name": "HeartbeatMessage",
+        "path": "sentinel-transport/sentinel-transport-simple-http/src/main/java/com/alibaba/csp/sentinel/transport/heartbeat/HeartbeatMessage.java",
+        "purpose": "Source module"
+      },
+      {
+        "name": "SimpleHttpHeartbeatSender",
+        "path": "sentinel-transport/sentinel-transport-simple-http/src/main/java/com/alibaba/csp/sentinel/transport/heartbeat/SimpleHttpHeartbeatSender.java",
+        "purpose": "Source module"
+      },
+      {
+        "name": "SocketFactory",
+        "path": "sentinel-transport/sentinel-transport-simple-http/src/main/java/com/alibaba/csp/sentinel/transport/heartbeat/client/SocketFactory.java",
+        "purpose": "Source module"
+      }
+    ],
+    "layers": [
+      "CLI interface (if applicable)",
+      "Business logic",
+      "Utilities and helpers"
+    ]
+  },
+  "mcp_servers": [],
+  "core_principles": [
+    "Modularity - Code organized by functionality",
+    "Testability - Comprehensive test coverage",
+    "Clarity - Code easy for AI agents to understand",
+    "Consistency - Uniform patterns throughout"
+  ],
+  "contribution_criteria": {
+    "what_we_want": [
+      "Bug fixes with test coverage",
+      "Code quality improvements",
+      "Test coverage increases",
+      "Documentation improvements",
+      "Performance optimizations"
+    ],
+    "what_we_dont_want": [
+      "New dependencies without justification",
+      "Code that reduces test coverage",
+      "Inconsistent naming or style",
+      "Dead code or commented code"
+    ]
+  },
+  "contribution_boundaries": {
+    "project_scale": "large",
+    "suggestion": "This large project should define clear contribution boundaries. Consider LlamaIndex model: 'no new X' policy."
+  },
+  "commands": {
+    "setup": {
+      "command": "npm install",
+      "description": "Install dependencies and set up development environment"
+    },
+    "test": {
+      "command": "npm test",
+      "description": "Run all tests"
+    },
+    "lint": {
+      "command": "npm run lint",
+      "description": "Check code style and quality"
+    },
+    "format": {
+      "command": "npm run format",
+      "description": "Format code to project standards"
+    }
+  },
+  "testing": {
+    "framework": "JUnit",
+    "total_tests": 337,
+    "pass_rate": 100,
+    "run_command": "npm test"
+  }
+}
