@@ -2,6 +2,7 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -91,5 +92,21 @@ public class ParamFlowRuleUtilTest {
         assertEquals(itemB.getCount(), parsedItems.get(valueB));
         assertEquals(itemC.getCount(), parsedItems.get(valueC));
         assertEquals(itemD.getCount(), parsedItems.get(valueD));
+    }
+
+    @Test
+    public void testParseHotParamItemsWithCharacterWrapper() {
+        // ParamFlowItem#newItem boxes a char into a Character and records the wrapper class name
+        // (java.lang.Character), which should be parsed into a Character key - just like
+        // char.class.getName() - so that it matches the boxed Character of the runtime argument.
+        char value = 'c';
+        ParamFlowItem item = ParamFlowItem.newItem(value, 3);
+        assertEquals(Character.class.getName(), item.getClassType());
+
+        Map<Object, Integer> parsedItems = ParamFlowRuleUtil.parseHotItems(Collections.singletonList(item));
+
+        assertEquals(1, parsedItems.size());
+        assertTrue("The parsed key should be a boxed Character", parsedItems.containsKey(value));
+        assertEquals(item.getCount(), parsedItems.get(value));
     }
 }

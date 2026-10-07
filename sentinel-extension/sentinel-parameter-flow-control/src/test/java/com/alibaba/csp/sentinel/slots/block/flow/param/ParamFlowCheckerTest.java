@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -142,6 +144,34 @@ public class ParamFlowCheckerTest {
         assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueB));
         assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueC));
         assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
+        assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
+    }
+
+    @Test
+    public void testSingleValueCheckThreadCountWithCharacterExceptionItem() {
+        final String resourceName = "testSingleValueCheckThreadCountWithCharacterExceptionItem";
+        final ResourceWrapper resourceWrapper = new StringResourceWrapper(resourceName, EntryType.IN);
+        int paramIdx = 0;
+
+        long globalThreshold = 5L;
+        int charThreshold = 2;
+        char valueD = 'c';
+
+        // Build the rule through the real public path, so the item class type is java.lang.Character.
+        ParamFlowRule rule = new ParamFlowRule(resourceName).setCount(globalThreshold).setParamIdx(paramIdx)
+                .setGrade(RuleConstant.FLOW_GRADE_THREAD)
+                .setParamFlowItemList(Collections.singletonList(ParamFlowItem.newItem(valueD, charThreshold)));
+        ParamFlowRuleUtil.fillExceptionFlowItems(rule);
+        assertEquals(charThreshold, (int)rule.getParsedHotItems().get(valueD));
+
+        ParameterMetric metric = mock(ParameterMetric.class);
+        when(metric.getThreadCount(paramIdx, valueD)).thenReturn((long)charThreshold - 1);
+        ParameterMetricStorage.getMetricsMap().put(resourceWrapper.getName(), metric);
+
+        // The Character item threshold should be applied to the boxed Character value.
+        assertTrue(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
+
+        when(metric.getThreadCount(paramIdx, valueD)).thenReturn((long)charThreshold);
         assertFalse(ParamFlowChecker.passSingleValueCheck(resourceWrapper, rule, 1, valueD));
     }
 

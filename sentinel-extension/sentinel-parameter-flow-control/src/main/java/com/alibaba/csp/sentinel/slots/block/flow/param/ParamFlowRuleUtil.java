@@ -242,7 +242,7 @@ public final class ParamFlowRuleUtil {
             return Byte.parseByte(value);
         } else if (short.class.toString().equals(classType) || Short.class.getName().equals(classType)) {
             return Short.parseShort(value);
-        } else if (char.class.toString().equals(classType)) {
+        } else if (char.class.toString().equals(classType) || Character.class.getName().equals(classType)) {
             char[] array = value.toCharArray();
             return array.length > 0 ? array[0] : null;
         }
