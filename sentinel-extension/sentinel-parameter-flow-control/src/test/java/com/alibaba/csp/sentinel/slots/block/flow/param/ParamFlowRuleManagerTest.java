@@ -97,6 +97,47 @@ public class ParamFlowRuleManagerTest {
 
 
     @Test
+    public void testLoadParamRulesKeepingSharedThreadCountForSurvivingRule() {
+        final String resA = "resA";
+        final int sharedParamIdx = 0;
+
+        // Two distinct rules share the same parameter index.
+        ParamFlowRule ruleA = new ParamFlowRule(resA)
+            .setCount(10)
+            .setParamIdx(sharedParamIdx)
+            .setGrade(RuleConstant.FLOW_GRADE_THREAD);
+        ParamFlowRule ruleB = new ParamFlowRule(resA)
+            .setCount(5)
+            .setParamIdx(sharedParamIdx);
+
+        ParamFlowRuleManager.loadRules(Arrays.asList(ruleA, ruleB));
+
+        // Initialize the metrics for both rules, as ParameterMetricStorage#initParamMetricsFor does
+        // for the loaded rules.
+        ParameterMetric metric = new ParameterMetric();
+        metric.initialize(ruleA);
+        metric.initialize(ruleB);
+        ParameterMetricStorage.getMetricsMap().put(resA, metric);
+
+        // Seed a known thread count on the shared parameter index.
+        Object value = "v";
+        metric.addThreadCount(value);
+        metric.addThreadCount(value);
+        long expectedThreadCount = metric.getThreadCount(sharedParamIdx, value);
+        assertTrue("Test fixture should have a positive thread count", expectedThreadCount > 0);
+
+        // Reload with only rule A: rule B is removed while rule A survives on the same index.
+        ParamFlowRuleManager.loadRules(Collections.singletonList(ruleA));
+
+        ParameterMetric metricAfter = ParameterMetricStorage.getParamMetricForResource(resA);
+        assertNotNull(metricAfter);
+        assertEquals("The thread count of the surviving rule should be preserved",
+            expectedThreadCount, metricAfter.getThreadCount(sharedParamIdx, value));
+        assertNotNull("The surviving rule's time counter should be preserved", metricAfter.getRuleTimeCounter(ruleA));
+        assertNull("The removed rule's time counter should be dropped", metricAfter.getRuleTimeCounter(ruleB));
+    }
+
+    @Test
     public void testLoadParamRulesAndGet() {
         final String resA = "abc";
         final String resB = "foo";

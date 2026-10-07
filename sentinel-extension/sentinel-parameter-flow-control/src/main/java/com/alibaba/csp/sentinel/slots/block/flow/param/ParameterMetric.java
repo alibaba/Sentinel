@@ -19,6 +19,7 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -91,8 +92,29 @@ public class ParameterMetric {
         synchronized (lock) {
             ruleTimeCounters.remove(rule);
             ruleTokenCounter.remove(rule);
-            threadCountMap.remove(rule.getParamIdx());
+            // The thread counters are shared by all the rules with the same parameter index,
+            // so the counter of the index should only be removed when no other rule still
+            // relies on it. Otherwise the in-flight thread count of the surviving rules
+            // would be dropped, making them under-counted.
+            Integer paramIdx = rule.getParamIdx();
+            if (!isParamIdxInUse(paramIdx)) {
+                threadCountMap.remove(paramIdx);
+            }
         }
+    }
+
+    private boolean isParamIdxInUse(Integer paramIdx) {
+        for (ParamFlowRule rule : ruleTimeCounters.keySet()) {
+            if (Objects.equals(rule.getParamIdx(), paramIdx)) {
+                return true;
+            }
+        }
+        for (ParamFlowRule rule : ruleTokenCounter.keySet()) {
+            if (Objects.equals(rule.getParamIdx(), paramIdx)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void initialize(ParamFlowRule rule) {
