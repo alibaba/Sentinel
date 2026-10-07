@@ -22,6 +22,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -181,7 +183,147 @@ public class ParameterMetricTest {
         assertEquals(0, threadCountMap.size());
     }
 
+    @Test
+    public void testAddThreadCountInterleavedInsertionScalar() {
+        assertInterleavedAddThreadCount(PARAM_TYPE_NORMAL);
+    }
+
+    @Test
+    public void testAddThreadCountInterleavedInsertionArray() {
+        assertInterleavedAddThreadCount(PARAM_TYPE_ARRAY);
+    }
+
+    @Test
+    public void testAddThreadCountInterleavedInsertionCollection() {
+        assertInterleavedAddThreadCount(PARAM_TYPE_COLLECTION);
+    }
+
+    /**
+     * Ensure {@code addThreadCount} does not lose increments when another caller adds the same
+     * parameter value while the first insertion is still in progress.
+     *
+     * <p>The interleaving is reproduced deterministically, without threads, sleeping or retry: the
+     * cache map of the metric is decorated so that a second {@code addThreadCount} runs after the
+     * delegate insertion has been performed but before {@code putIfAbsent} returns {@code null} to
+     * the first caller.</p>
+     *
+     * @param paramType one of {@link #PARAM_TYPE_NORMAL}, {@link #PARAM_TYPE_ARRAY} or
+     *                  {@link #PARAM_TYPE_COLLECTION}, to exercise every argument branch
+     */
+    private void assertInterleavedAddThreadCount(final int paramType) {
+        final Object value = THREAD_COUNT_VALUE;
+        final ParamFlowRule rule = new ParamFlowRule("interleavedAddThreadCount").setParamIdx(0);
+        final ParameterMetric metric = new ParameterMetric();
+        metric.initialize(rule);
+
+        CacheMap<Object, AtomicInteger> realCacheMap = metric.getThreadCountMap().get(rule.getParamIdx());
+        assertNotNull(realCacheMap);
+        // Decorate the actual cache map, so that size/eviction semantics stay those of the metric.
+        metric.getThreadCountMap().put(rule.getParamIdx(), new InsertionHookCacheMap(realCacheMap, value,
+            new Runnable() {
+                @Override
+                public void run() {
+                    // Another caller adds the same value while the first insertion is in progress.
+                    metric.addThreadCount(value);
+                }
+            }));
+
+        switch (paramType) {
+            case PARAM_TYPE_ARRAY:
+                metric.addThreadCount((Object)new Object[] {value});
+                break;
+            case PARAM_TYPE_COLLECTION:
+                metric.addThreadCount(Collections.singletonList(value));
+                break;
+            case PARAM_TYPE_NORMAL:
+            default:
+                metric.addThreadCount(value);
+                break;
+        }
+
+        CacheMap<Object, AtomicInteger> threadCountMap = metric.getThreadCountMap().get(rule.getParamIdx());
+        assertEquals("Interleaved addThreadCount calls must not lose increments", 2,
+            metric.getThreadCount(rule.getParamIdx(), value));
+        // A single entry is kept for the value, with no duplicate or leaked counter instance.
+        assertEquals(1, threadCountMap.size());
+
+        // The eviction contract is preserved: two decreaseThreadCount calls evict the entry.
+        metric.decreaseThreadCount(value);
+        metric.decreaseThreadCount(value);
+        assertEquals(0, metric.getThreadCount(rule.getParamIdx(), value));
+        assertEquals(0, threadCountMap.size());
+    }
+
     private static final int PARAM_TYPE_NORMAL = 0;
     private static final int PARAM_TYPE_ARRAY = 1;
     private static final int PARAM_TYPE_COLLECTION = 2;
+
+    /** Parameter value used by the interleaving regression tests. */
+    private static final Object THREAD_COUNT_VALUE = 100L;
+
+    /**
+     * A {@link CacheMap} decorator which runs {@code afterInsertion} once, after the delegate has
+     * inserted {@code triggerKey} but before {@code putIfAbsent} returns {@code null}. All other
+     * operations are delegated to the real cache map.
+     */
+    private static final class InsertionHookCacheMap implements CacheMap<Object, AtomicInteger> {
+
+        private final CacheMap<Object, AtomicInteger> delegate;
+        private final Object triggerKey;
+        private final Runnable afterInsertion;
+        private boolean hookArmed = true;
+
+        InsertionHookCacheMap(CacheMap<Object, AtomicInteger> delegate, Object triggerKey,
+                              Runnable afterInsertion) {
+            this.delegate = delegate;
+            this.triggerKey = triggerKey;
+            this.afterInsertion = afterInsertion;
+        }
+
+        @Override
+        public AtomicInteger putIfAbsent(Object key, AtomicInteger value) {
+            AtomicInteger previous = delegate.putIfAbsent(key, value);
+            if (previous == null && hookArmed && triggerKey.equals(key)) {
+                // Disarm before running the hook so that its re-entrant call cannot loop.
+                hookArmed = false;
+                afterInsertion.run();
+            }
+            return previous;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return delegate.containsKey(key);
+        }
+
+        @Override
+        public AtomicInteger get(Object key) {
+            return delegate.get(key);
+        }
+
+        @Override
+        public AtomicInteger remove(Object key) {
+            return delegate.remove(key);
+        }
+
+        @Override
+        public AtomicInteger put(Object key, AtomicInteger value) {
+            return delegate.put(key, value);
+        }
+
+        @Override
+        public long size() {
+            return delegate.size();
+        }
+
+        @Override
+        public void clear() {
+            delegate.clear();
+        }
+
+        @Override
+        public Set<Object> keySet(boolean ascending) {
+            return delegate.keySet(ascending);
+        }
+    }
 }

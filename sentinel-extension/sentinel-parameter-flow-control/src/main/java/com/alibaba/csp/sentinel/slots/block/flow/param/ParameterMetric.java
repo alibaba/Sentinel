@@ -204,32 +204,24 @@ public class ParameterMetric {
 
                 if (Collection.class.isAssignableFrom(arg.getClass())) {
                     for (Object value : ((Collection)arg)) {
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
+                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger(1));
                         if (oldValue != null) {
                             oldValue.incrementAndGet();
-                        } else {
-                            threadCount.put(value, new AtomicInteger(1));
                         }
-
                     }
                 } else if (arg.getClass().isArray()) {
                     int length = Array.getLength(arg);
                     for (int i = 0; i < length; i++) {
                         Object value = Array.get(arg, i);
-                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger());
+                        AtomicInteger oldValue = threadCount.putIfAbsent(value, new AtomicInteger(1));
                         if (oldValue != null) {
                             oldValue.incrementAndGet();
-                        } else {
-                            threadCount.put(value, new AtomicInteger(1));
                         }
-
                     }
                 } else {
-                    AtomicInteger oldValue = threadCount.putIfAbsent(arg, new AtomicInteger());
+                    AtomicInteger oldValue = threadCount.putIfAbsent(arg, new AtomicInteger(1));
                     if (oldValue != null) {
                         oldValue.incrementAndGet();
-                    } else {
-                        threadCount.put(arg, new AtomicInteger(1));
                     }
 
                 }
