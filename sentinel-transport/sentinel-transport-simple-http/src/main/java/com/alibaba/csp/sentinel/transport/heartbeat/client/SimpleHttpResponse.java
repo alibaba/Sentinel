@@ -18,6 +18,8 @@ package com.alibaba.csp.sentinel.transport.heartbeat.client;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,13 +47,78 @@ public class SimpleHttpResponse {
         this.body = body;
     }
 
+    /**
+     * Resolve the charset from the {@code Content-Type} header, which is a media type with optional
+     * parameters, e.g. {@code text/plain; charset="UTF-8"} (RFC 7231, section 3.1.1.5). When the
+     * header is absent or carries no usable {@code charset} parameter, the default charset is used.
+     * An unsupported charset value still fails with {@link java.nio.charset.UnsupportedCharsetException}.
+     */
     private void parseCharset() {
+        // Reset to the default on every call, as the headers may have been mutated in between.
+        charset = Charset.forName(SentinelConfig.charset());
         String contentType = getHeader("Content-Type");
-        for (String str : contentType.split(" ")) {
-            if (str.toLowerCase().startsWith("charset=")) {
-                charset = Charset.forName(str.split("=")[1]);
+        if (contentType == null) {
+            return;
+        }
+        for (String parameter : splitParameters(contentType)) {
+            int idx = parameter.indexOf('=');
+            // Skip the media type itself and any parameter that is not a charset.
+            if (idx < 0 || !"charset".equalsIgnoreCase(parameter.substring(0, idx).trim())) {
+                continue;
+            }
+            String value = unquote(parameter.substring(idx + 1).trim());
+            if (!value.isEmpty()) {
+                charset = Charset.forName(value);
+            }
+            return;
+        }
+    }
+
+    /**
+     * Split the parameters of a media type value on {@code ;}, ignoring separators inside a quoted
+     * value, so that e.g. {@code text/plain; boundary="a;b"; charset=UTF-8} is split correctly.
+     * A quoted-pair ({@code \} followed by any character) inside a quoted value is kept as-is and
+     * never ends the quoted value, per RFC 7231, section 3.1.1.1.
+     *
+     * @param contentType the media type value
+     * @return the media type and its parameters
+     */
+    private static List<String> splitParameters(String contentType) {
+        List<String> parameters = new ArrayList<String>();
+        StringBuilder current = new StringBuilder();
+        boolean quoted = false;
+        for (int i = 0; i < contentType.length(); i++) {
+            char c = contentType.charAt(i);
+            if (quoted && c == '\\' && i + 1 < contentType.length()) {
+                // Keep the escaped character verbatim: it may be a quote or a separator.
+                current.append(c).append(contentType.charAt(++i));
+                continue;
+            }
+            if (c == '"') {
+                quoted = !quoted;
+            }
+            if (c == ';' && !quoted) {
+                parameters.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(c);
             }
         }
+        parameters.add(current.toString());
+        return parameters;
+    }
+
+    /**
+     * Strip the surrounding balanced double quotes of a parameter value, if any.
+     *
+     * @param value the parameter value
+     * @return the unquoted value
+     */
+    private static String unquote(String value) {
+        if (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
+            return value.substring(1, value.length() - 1).trim();
+        }
+        return value;
     }
 
     private void parseCode() {
