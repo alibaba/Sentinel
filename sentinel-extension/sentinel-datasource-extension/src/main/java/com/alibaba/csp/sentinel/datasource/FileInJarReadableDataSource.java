@@ -116,6 +116,7 @@ public class FileInJarReadableDataSource<T> extends AbstractDataSource<String, T
 
     @Override
     public void close() throws Exception {
+        jarFile.close();
         buf = null;
     }
 
