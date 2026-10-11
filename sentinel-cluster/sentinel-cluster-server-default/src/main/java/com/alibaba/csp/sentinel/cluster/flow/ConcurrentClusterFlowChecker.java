@@ -95,6 +95,12 @@ final public class ConcurrentClusterFlowChecker {
         }
         int acquireCount = node.getAcquireCount();
         AtomicInteger nowCalls = CurrentConcurrencyManager.get(node.getFlowId());
+        if (nowCalls == null) {
+            // The concurrency counter has been removed by a concurrent rule refresh,
+            // there is nothing left to release.
+            RecordLog.info("[ConcurrentClusterFlowChecker] The concurrency counter of flowId<{}> is absent, skip releasing", node.getFlowId());
+            return new TokenResult(TokenResultStatus.RELEASE_OK);
+        }
         nowCalls.getAndAdd(-1 * acquireCount);
         ClusterServerStatLogUtil.log("concurrent|release|" + rule.getClusterConfig().getFlowId(), acquireCount);
         return new TokenResult(TokenResultStatus.RELEASE_OK);
