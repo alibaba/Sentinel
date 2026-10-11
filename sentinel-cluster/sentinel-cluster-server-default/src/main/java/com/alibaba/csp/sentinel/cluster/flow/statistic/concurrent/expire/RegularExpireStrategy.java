@@ -21,6 +21,7 @@ import com.alibaba.csp.sentinel.cluster.flow.statistic.concurrent.TokenCacheNode
 import com.alibaba.csp.sentinel.cluster.server.connection.ConnectionManager;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
@@ -115,7 +116,16 @@ public class RegularExpireStrategy implements ExpireStrategy {
 
             // If we find that token's save time is more than 2 times of the client's call resource timeout time,
             // the token will be determined to timeout.
-            long resourceTimeout = ClusterFlowRuleManager.getFlowRuleById(node.getFlowId()).getClusterConfig().getResourceTimeout();
+            FlowRule rule = ClusterFlowRuleManager.getFlowRuleById(node.getFlowId());
+            if (rule == null) {
+                // The rule has been removed by a hot update, so the token will never be
+                // released by its client. Recycle it directly, otherwise the thrown NPE
+                // would abort this round of scanning and starve all following expired tokens.
+                removeToken(key, node);
+                RecordLog.info("[RegularExpireStrategy] Delete the token<{}> whose rule is absent for flowId<{}>", node.getTokenId(), node.getFlowId());
+                continue;
+            }
+            long resourceTimeout = rule.getClusterConfig().getResourceTimeout();
             if (System.currentTimeMillis() - node.getResourceTimeout() > resourceTimeout) {
                 removeToken(key, node);
                 RecordLog.info("[RegularExpireStrategy] Delete the expired token<{}> because of resource timeout for ruleId<{}>", node.getTokenId(), node.getFlowId());
