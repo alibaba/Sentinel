@@ -108,6 +108,10 @@ public class FileInJarReadableDataSource<T> extends AbstractDataSource<String, T
                 }
                 len += read;
             }
+            if (len == buf.length && inputStream.read() != -1) {
+                throw new IllegalStateException(String.format("Size of file <%s> exceeds the bufSize (%d)",
+                    jarFile.getName(), buf.length));
+            }
             return new String(buf, 0, len, charset);
         }
     }

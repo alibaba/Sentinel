@@ -17,10 +17,16 @@ package com.alibaba.csp.sentinel.datasource;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +67,41 @@ public class FileInJarReadableDataSourceTest {
             jar.getAbsolutePath(), "rules.json", source -> source, 7);
         try {
             dataSource.readSource();
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRejectEntryLargerThanBufferWhenAvailableUnderReports() throws Exception {
+        readSourceWithUnderReportingAvailable("12345678", 7);
+    }
+
+    @Test
+    public void testReadEntryFillingBufferWhenAvailableUnderReports() throws Exception {
+        assertEquals("12345678", readSourceWithUnderReportingAvailable("12345678", 8));
+    }
+
+    private String readSourceWithUnderReportingAvailable(String content, int bufferSize) throws Exception {
+        File jar = createJar(content);
+        FileInJarReadableDataSource<String> dataSource = new FileInJarReadableDataSource<>(
+            jar.getAbsolutePath(), "rules.json", source -> source, bufferSize);
+        Field jarFileField = FileInJarReadableDataSource.class.getDeclaredField("jarFile");
+        jarFileField.setAccessible(true);
+        ((JarFile) jarFileField.get(dataSource)).close();
+        try (JarFile jarFile = new JarFile(jar) {
+            @Override
+            public InputStream getInputStream(ZipEntry entry) throws IOException {
+                return new FilterInputStream(super.getInputStream(entry)) {
+                    @Override
+                    public int available() {
+                        return 0;
+                    }
+                };
+            }
+        }) {
+            jarFileField.set(dataSource, jarFile);
+            return dataSource.readSource();
         } finally {
             dataSource.close();
         }
