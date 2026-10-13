@@ -100,7 +100,18 @@ public class FileInJarReadableDataSource<T> extends AbstractDataSource<String, T
                 throw new IllegalStateException(String.format("Size of file <%s> exceeds the bufSize (%d): %d",
                     jarFile.getName(), buf.length, inputStream.available()));
             }
-            int len = inputStream.read(buf);
+            int len = 0;
+            while (len < buf.length) {
+                int read = inputStream.read(buf, len, buf.length - len);
+                if (read == -1) {
+                    break;
+                }
+                len += read;
+            }
+            if (len == buf.length && inputStream.read() != -1) {
+                throw new IllegalStateException(String.format("Size of file <%s> exceeds the bufSize (%d)",
+                    jarFile.getName(), buf.length));
+            }
             return new String(buf, 0, len, charset);
         }
     }
