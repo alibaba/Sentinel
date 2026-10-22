@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -74,6 +75,64 @@ public class ParameterMetricTest {
         assertEquals(0, metric.getThreadCountMap().size());
         assertEquals(0, metric.getRuleTimeCounterMap().size());
         assertEquals(0, metric.getRuleTokenCounterMap().size());
+    }
+
+    @Test
+    public void testClearForRuleKeepsSharedThreadCount() {
+        ParameterMetric metric = new ParameterMetric();
+
+        // Two distinct rules share the same parameter index.
+        ParamFlowRule ruleA = new ParamFlowRule("abc").setParamIdx(1);
+        ParamFlowRule ruleB = new ParamFlowRule("abc").setParamIdx(1).setCount(5);
+        metric.initialize(ruleA);
+        metric.initialize(ruleB);
+
+        CacheMap<Object, AtomicInteger> threadCountMap = metric.getThreadCountMap().get(1);
+        assertNotNull(threadCountMap);
+        threadCountMap.put("v", new AtomicInteger(2));
+
+        // Clearing rule B should keep the shared thread counter, as rule A still uses index 1.
+        metric.clearForRule(ruleB);
+        assertNull("The removed rule's time counter should be cleared", metric.getRuleTimeCounter(ruleB));
+        assertNull("The removed rule's token counter should be cleared", metric.getRuleTokenCounterMap().get(ruleB));
+        assertNotNull("The surviving rule's time counter should be kept", metric.getRuleTimeCounter(ruleA));
+        assertSame("The shared thread counter should be kept for the surviving rule",
+            threadCountMap, metric.getThreadCountMap().get(1));
+        assertEquals(2L, metric.getThreadCount(1, "v"));
+
+        // Once the last rule using index 1 is cleared, the shared counter should be removed.
+        metric.clearForRule(ruleA);
+        assertNull("The thread counter should be cleared when no rule uses the index",
+            metric.getThreadCountMap().get(1));
+        assertEquals(0L, metric.getThreadCount(1, "v"));
+    }
+
+    @Test
+    public void testClearForRuleRemovesThreadCountOfUnusedIndex() {
+        ParameterMetric metric = new ParameterMetric();
+
+        ParamFlowRule ruleA = new ParamFlowRule("abc").setParamIdx(1);
+        // Rule C uses a different, unique index.
+        ParamFlowRule ruleC = new ParamFlowRule("abc").setParamIdx(2);
+        metric.initialize(ruleA);
+        metric.initialize(ruleC);
+
+        CacheMap<Object, AtomicInteger> sharedThreadCount = metric.getThreadCountMap().get(1);
+        CacheMap<Object, AtomicInteger> uniqueThreadCount = metric.getThreadCountMap().get(2);
+        assertNotNull(sharedThreadCount);
+        assertNotNull(uniqueThreadCount);
+        sharedThreadCount.put("v", new AtomicInteger(2));
+        uniqueThreadCount.put("w", new AtomicInteger(3));
+
+        // Index 2 is only used by rule C, so its counter should be removed.
+        metric.clearForRule(ruleC);
+        assertNull("The thread counter of a unique index should be cleared",
+            metric.getThreadCountMap().get(2));
+        assertEquals(0L, metric.getThreadCount(2, "w"));
+        // Index 1 is still used by rule A, so it should be untouched.
+        assertSame("The thread counter of an index still in use should be kept",
+            sharedThreadCount, metric.getThreadCountMap().get(1));
+        assertEquals(2L, metric.getThreadCount(1, "v"));
     }
 
     @Test
