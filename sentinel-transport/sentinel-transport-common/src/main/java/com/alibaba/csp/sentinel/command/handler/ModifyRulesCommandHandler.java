@@ -15,7 +15,6 @@
  */
 package com.alibaba.csp.sentinel.command.handler;
 
-import java.net.URLDecoder;
 import java.util.List;
 
 import com.alibaba.csp.sentinel.command.CommandHandler;
@@ -24,7 +23,6 @@ import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.command.annotation.CommandMapping;
 import com.alibaba.csp.sentinel.datasource.WritableDataSource;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.VersionUtil;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRuleManager;
@@ -57,16 +55,8 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
                     + "\" introduced in application is too old, you need fastjson-1.2.12 at least."));
         }
         String type = request.getParam("type");
-        // rule data in get parameter
+        // Command transports URL-decode request parameters, so "data" is already plain JSON here.
         String data = request.getParam("data");
-        if (StringUtil.isNotEmpty(data)) {
-            try {
-                data = URLDecoder.decode(data, "utf-8");
-            } catch (Exception e) {
-                RecordLog.info("Decode rule data error", e);
-                return CommandResponse.ofFailure(e, "decode rule data error");
-            }
-        }
 
         RecordLog.info("Receiving rule change (type: {}): {}", type, data);
 
