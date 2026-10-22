@@ -18,6 +18,7 @@ package com.alibaba.csp.sentinel.slots.block.flow.param;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
@@ -129,12 +130,23 @@ public final class ParamFlowRuleManager {
                 for (ParamFlowRule rule : oldRuleList) {
                     ParameterMetric parameterMetric = ParameterMetricStorage.getParamMetricForResource(resource);
                     if (parameterMetric != null) {
-                        parameterMetric.clearForRule(rule);
+                        // The new rules of the resource may not be initialized yet, so the shared
+                        // thread counter of the index must be kept while they still use it.
+                        parameterMetric.clearForRule(rule, isParamIdxLoaded(newRuleList, rule.getParamIdx()));
                     }
                 }
             }
 
             return newRuleMap;
+        }
+
+        private static boolean isParamIdxLoaded(List<ParamFlowRule> rules, Integer paramIdx) {
+            for (ParamFlowRule rule : rules) {
+                if (Objects.equals(rule.getParamIdx(), paramIdx)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

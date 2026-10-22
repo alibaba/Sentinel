@@ -89,15 +89,29 @@ public class ParameterMetric {
     }
 
     public void clearForRule(ParamFlowRule rule) {
+        clearForRule(rule, false);
+    }
+
+    /**
+     * Clear the counters of a rule that is not loaded any more. The shared thread counter of the
+     * parameter index is kept as long as another rule of the metric or one of the rules that are
+     * loaded by the same update still uses that index, even if the latter is not initialized yet.
+     *
+     * @param rule the rule that is removed
+     * @param paramIdxUsedByNewRules whether the rules loaded by the same update use the parameter index of the rule
+     */
+    void clearForRule(ParamFlowRule rule, boolean paramIdxUsedByNewRules) {
         synchronized (lock) {
             ruleTimeCounters.remove(rule);
             ruleTokenCounter.remove(rule);
             // The thread counters are shared by all the rules with the same parameter index,
             // so the counter of the index should only be removed when no other rule still
             // relies on it. Otherwise the in-flight thread count of the surviving rules
-            // would be dropped, making them under-counted.
+            // would be dropped, making them under-counted. The rules loaded by the update are
+            // not initialized before their first entry, so they are taken into account
+            // explicitly.
             Integer paramIdx = rule.getParamIdx();
-            if (!isParamIdxInUse(paramIdx)) {
+            if (!paramIdxUsedByNewRules && !isParamIdxInUse(paramIdx)) {
                 threadCountMap.remove(paramIdx);
             }
         }
