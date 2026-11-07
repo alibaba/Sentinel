@@ -172,7 +172,7 @@ public class RedisDataSource<T> extends AbstractDataSource<String, T> {
             RedisURI.Builder clusterRedisUriBuilder = RedisURI.builder();
             clusterRedisUriBuilder.withHost(config.getHost())
                 .withPort(config.getPort())
-                .withSsl(config.isSslEnable())
+                .withSsl(connectionConfig.isSslEnable())
                 .withTimeout(Duration.ofMillis(connectionConfig.getTimeout()));
             //All redis nodes must have same password
             if (password != null) {
