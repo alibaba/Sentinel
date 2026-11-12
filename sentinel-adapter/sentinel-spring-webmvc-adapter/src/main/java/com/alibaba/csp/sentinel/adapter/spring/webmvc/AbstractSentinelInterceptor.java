@@ -46,7 +46,7 @@ import java.util.Objects;
  * <p>
  * How to implement a forward sub-request in your action:
  * <pre>
- * initalRequest() {
+ * initialRequest() {
  *     ModelAndView mav = new ModelAndView();
  *     mav.setViewName("another");
  *     return mav;
