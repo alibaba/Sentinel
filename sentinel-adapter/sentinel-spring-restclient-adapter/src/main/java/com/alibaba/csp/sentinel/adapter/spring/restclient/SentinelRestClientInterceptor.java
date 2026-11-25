@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.springframework.http.HttpRequest;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
@@ -96,9 +97,10 @@ public class SentinelRestClientInterceptor implements ClientHttpRequestIntercept
             }
 
             ClientHttpResponse response = execution.execute(request, body);
+            HttpStatusCode statusCode = readStatusCode(response);
 
-            if (response.getStatusCode().is5xxServerError()) {
-                RuntimeException ex = new RuntimeException("Server error: " + response.getStatusCode().value());
+            if (statusCode.is5xxServerError()) {
+                RuntimeException ex = new RuntimeException("Server error: " + statusCode.value());
                 Tracer.traceEntry(ex, hostEntry);
                 if (pathEntry != null) {
                     Tracer.traceEntry(ex, pathEntry);
@@ -119,6 +121,21 @@ public class SentinelRestClientInterceptor implements ClientHttpRequestIntercept
             if (hostEntry != null) {
                 hostEntry.exit();
             }
+        }
+    }
+
+    private static HttpStatusCode readStatusCode(ClientHttpResponse response) throws IOException {
+        try {
+            return response.getStatusCode();
+        } catch (IOException | RuntimeException failure) {
+            try {
+                response.close();
+            } catch (RuntimeException closeFailure) {
+                if (failure != closeFailure) {
+                    failure.addSuppressed(closeFailure);
+                }
+            }
+            throw failure;
         }
     }
 
